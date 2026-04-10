@@ -35,6 +35,37 @@ h1 {
   border: 1px solid #bbdefb;
 }
 
+.travel-form {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.travel-form input, .travel-form textarea {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.travel-form button {
+  padding: 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.travel-form button:hover {
+  background-color: #218838;
+}
+
 .travel-card {
   background: white;
   border-radius: 12px;
