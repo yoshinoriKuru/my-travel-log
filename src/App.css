@@ -11,10 +11,28 @@ h1 {
   margin-bottom: 40px;
 }
 
+.card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
 .card-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
+}
+
+.area-badge {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  border: 1px solid #bbdefb;
 }
 
 .travel-card {
@@ -31,23 +49,31 @@ h1 {
 }
 
 .travel-card h2 {
-  margin-top: 0;
+  margin: 0;
   font-size: 1.25rem;
   color: #2c3e50;
 }
 
-.map-button {
-  display: inline-block;
+.spot-list {
   margin-top: 15px;
-  padding: 10px 16px;
-  background-color: #4285F4; /* Googleマップっぽい青 */
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 0.9rem;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
 }
 
-.map-button:hover {
-  background-color: #357ae8;
+.spot-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.spot-item h4 {
+  margin: 0 0 5px 0;
+  color: #d35400;
+}
+
+.map-link {
+  font-size: 0.8rem;
+  color: #4285F4;
+  text-decoration: none;
 }
