@@ -26,58 +26,70 @@ interface TravelForm {
 }
 
 function App() {
-  // 2. サンプルデータ
-  // const [travels] = useState<TravelCard[]>([
-  //   {
-  //     id: 1,
-  //     title: "初夏の北海道　３泊４日",
-  //     area: "北海道",
-  //     totalComment: "天候にも恵まれて最高な旅行でした。",
-  //     spots: [
-  //       {
-  //         id: 101,
-  //         name: "小樽運河",
-  //         comment: "夜のガス灯がとてもロマンチックでした。",
-  //         mapUrl: "https://www.google.com/maps/search/?api=1&query=小樽運河"
-  //       },
-  //       {
-  //         id: 102,
-  //         name: "札幌市時計台",
-  //         comment: "街の中にポツンとあって驚いたけど、歴史を感じた。",
-  //         mapUrl: "https://www.google.com/maps/search/?api=1&query=札幌市時計台"
-  //       }
-  //     ]
-  //   }
-  // ]);
-
-  // 1. 旅行一覧のデータ
+  // 旅行一覧のデータのState
   const [travels, setTravels] = useState<TravelCard[]>([]);
 
-  // 2. フォーム入力中のデータ
+  // フォーム入力中のデータ(旅行の基本情報用)のState
   const [formData, setFormData] = useState<TravelForm>({
     title: "",
     area: "",
     totalComment: ""
-  })
+  });
 
   // 入力が変更された時の処理
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const {name, value} = e.target;
     setFormData({ ...formData, [name]: value });
   };
+  
+  // フォームに入力中の「スポット単体」のState
+  const [spotInput, setSpotInput] = useState<Omit<Spot, 'id'>>({
+    name: '',
+    comment: '',
+    mapUrl: '',
+  });
+
+  // この旅行に追加予定の「スポットリスト」のState
+  const [tempSpots, setTempSpots] = useState<Spot[]>([]);
+
+  // スポット入力欄が変更された時の処理
+  const handleSpotChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setSpotInput({...spotInput, [name]: value});
+  };
+
+  // 「スポットをリストに追加」ボタンを押した時の処理
+  const addSpotToTempList = () => {
+    if (!spotInput.name) return;  // 名前が空なら追加しない
+
+      // 1. スポット名をエンコード(スペースや日本語をURLで使える形式に変換)
+      const encodedName = encodeURIComponent(spotInput.name);
+
+      // 2. GoogleMapの検索URLを作成
+      const generatedMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedName}`;
+      
+      const newSpot: Spot ={
+        ...spotInput,
+        id: Date.now(),   // 簡易ID
+        mapUrl: generatedMapUrl,    // 自動生成したURLをセット
+      };
+      setTempSpots([...tempSpots, newSpot]);
+      setSpotInput({name: "", comment: "", mapUrl: ""});    // 入力欄をクリア
+  };
 
   // 保存ボタンが押された時の処理
   const handleSubmit = (e: React.SyntheticEvent) => {
-    e.preventDefault();
+    e.preventDefault();   // ページが勝手にリロードされるのを防ぐ
 
     const newTravel: TravelCard = {
       ...formData,
       id: Date.now(), // 簡易的なID生成
-      spots: []       // 最初は空のリスト
+      spots: tempSpots     // 溜めておいたスポットリストをここで合体
     };
 
     setTravels([...travels, newTravel]);                    // リストに追加
     setFormData({title: "", area: "", totalComment: ""});   // フォームを空にする
+    setTempSpots([]);                                       // スポットリストをリセット
   };
 
   return (
@@ -86,9 +98,10 @@ function App() {
 
       {/* 入力フォーム */}
       <form onSubmit={handleSubmit} className='travel-form'>
+        <h3>1. 旅行の基本情報</h3>
         <input
           name='title'
-          placeholder='旅行のタイトル（例:北海道 3泊4日）'
+          placeholder='旅行のタイトル（例:北海道 3泊4日)'
           value={formData.title}
           onChange={handleChange}
           required
@@ -100,13 +113,35 @@ function App() {
           onChange={handleChange}
           required
         />
-        <textarea 
+
+        <hr />
+
+        <h3>2. 訪れたスポットを追加</h3>
+        <div className='spot-input-section'>
+          <input name="name" placeholder='スポット名(例:小樽運河)' value={spotInput.name} onChange={handleSpotChange} />
+          <textarea name="comment" placeholder='スポットの感想' value={spotInput.comment} onChange={handleSpotChange}></textarea>
+          {/* <input name="mapUrl" placeholder='GoogleマップのURL' value={spotInput.mapUrl} onChange={handleSpotChange} /> */}
+          <button type='button' onClick={addSpotToTempList} className='add-spot-button'>
+            このスポットを追加
+          </button>
+        </div>
+
+        {/* 追加予定のスポット一覧を表示 */}
+        <ul className="temp-spot-list">
+          {tempSpots.map(spot => (
+            <li key={spot.id}>📍 {spot.name}</li>
+          ))}
+        </ul>
+
+        <hr />
+
+        <textarea
           name="totalComment"
-          placeholder='全体の感想'
+          placeholder='旅行全体の感想'
           value={formData.totalComment}
           onChange={handleChange}
         />
-        <button type="submit">旅行を登録する</button>
+        <button type="submit" className='main-submit-button'>旅行記を保存する</button>
       </form>
 
       <hr />

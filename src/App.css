@@ -108,3 +108,30 @@ h1 {
   color: #4285F4;
   text-decoration: none;
 }
+
+.spot-input-section {
+  background: #fff;
+  padding: 15px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-spot-button {
+  background-color: #6c757d !important;
+  font-size: 0.8rem !important;
+}
+
+.temp-spot-list {
+  margin: 10px 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.main-submit-button {
+  background-color: #28a745 !important;
+  font-size: 1.1rem !important;
+}
