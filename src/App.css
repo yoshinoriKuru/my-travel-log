@@ -135,3 +135,37 @@ h1 {
   background-color: #28a745 !important;
   font-size: 1.1rem !important;
 }
+
+.header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%,
+}
+
+.delete-button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.delete-button:hover {
+  background-color: #ff1a1a;
+}
+
+.delete-mini-button {
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.delete-mini-button:hover {
+  color: #ff4d4d;
+}

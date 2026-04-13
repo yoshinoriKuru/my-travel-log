@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 // 訪れた地点ごとの型
@@ -27,7 +27,11 @@ interface TravelForm {
 
 function App() {
   // 旅行一覧のデータのState
-  const [travels, setTravels] = useState<TravelCard[]>([]);
+  // 初期値をlocalStorageから読み込む。初回アクセス時は空配列[]を使う
+  const [travels, setTravels] = useState<TravelCard[]>(() => {
+    const savedTravels = localStorage.getItem('my-travel-logs');
+    return savedTravels ? JSON.parse(savedTravels) : [];
+  });
 
   // フォーム入力中のデータ(旅行の基本情報用)のState
   const [formData, setFormData] = useState<TravelForm>({
@@ -77,6 +81,12 @@ function App() {
       setSpotInput({name: "", comment: "", mapUrl: ""});    // 入力欄をクリア
   };
 
+  // travelsが更新されるたびにlocalStorageに保存する
+  // [travels]を監視対象に指定し、travelsに変化（追加や削除）があった瞬間に自動でlocalStorageを最新状態に上書きする
+  useEffect(() => {
+    localStorage.setItem('my-travel-logs', JSON.stringify(travels));
+  }, [travels]);
+
   // 保存ボタンが押された時の処理
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();   // ページが勝手にリロードされるのを防ぐ
@@ -90,6 +100,19 @@ function App() {
     setTravels([...travels, newTravel]);                    // リストに追加
     setFormData({title: "", area: "", totalComment: ""});   // フォームを空にする
     setTempSpots([]);                                       // スポットリストをリセット
+  };
+
+  // 旅行記を削除する処理
+  const deleteTravel = (id: number) => {
+    if (window.confirm("この旅行記を削除してもよろしいですか？")) {
+      const updatedTravels = travels.filter((travel) => travel.id !== id);
+      setTravels(updatedTravels);   // useEffectが動くので、localStorageも自動で更新される
+    }
+  };
+
+  // スポット入力中のリストから1つ削除する処理
+  const deleteTempSpot = (id: number) => {
+    setTempSpots(tempSpots.filter((spot) => spot.id !== id));
   };
 
   return (
@@ -120,7 +143,6 @@ function App() {
         <div className='spot-input-section'>
           <input name="name" placeholder='スポット名(例:小樽運河)' value={spotInput.name} onChange={handleSpotChange} />
           <textarea name="comment" placeholder='スポットの感想' value={spotInput.comment} onChange={handleSpotChange}></textarea>
-          {/* <input name="mapUrl" placeholder='GoogleマップのURL' value={spotInput.mapUrl} onChange={handleSpotChange} /> */}
           <button type='button' onClick={addSpotToTempList} className='add-spot-button'>
             このスポットを追加
           </button>
@@ -129,7 +151,11 @@ function App() {
         {/* 追加予定のスポット一覧を表示 */}
         <ul className="temp-spot-list">
           {tempSpots.map(spot => (
-            <li key={spot.id}>📍 {spot.name}</li>
+            <li key={spot.id}>📍 {spot.name}
+              <button type='button' onClick={() => deleteTempSpot(spot.id)} className='delete-mini-button'>
+                x
+              </button>
+            </li>
           ))}
         </ul>
 
@@ -145,14 +171,21 @@ function App() {
       </form>
 
       <hr />
-
+      
+      {/* 保存済みカードの表示部分 */}
       <div className='card-list'>
         {travels.map((travel) => (
           <div key={travel.id} className='travel-card'>
             {/* エリアをバッジとして表示 */}
             <div className='card-header'>
               <span className='area-badge'>{travel.area}</span>
-              <h2>{travel.title}</h2>
+              <div className='header-main'>
+                <h2>{travel.title}</h2>
+                {/* 削除ボタン */}
+                <button onClick={() => deleteTravel(travel.id)} className='delete-button'>
+                  削除
+                </button>
+              </div>
             </div>
             <p className='total-comment'>{travel.totalComment}</p>
 
