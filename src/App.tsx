@@ -81,6 +81,30 @@ function App() {
       setSpotInput({name: "", comment: "", mapUrl: ""});    // 入力欄をクリア
   };
 
+  // 編集中の旅行記のIDを保持する(nullなら新規作成モード)
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  // 編集ボタンが押された時の処理
+  const startEdit = (travel: TravelCard) => {
+    setEditingId(travel.id);
+    setFormData({
+      title: travel.title,
+      area: travel.area,
+      totalComment: travel.totalComment
+    });
+    setTempSpots(travel.spots);   // スポットリストもフォームに呼び戻す
+
+    // 画面の一番上(フォームがある場所)へスムーズにスクロール
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 編集をキャンセルする処理
+  const cancelEdit = ()=> {
+    setEditingId(null);
+    setFormData({ title: '', area: '', totalComment: '' });
+    setTempSpots([]);
+  };
+
   // travelsが更新されるたびにlocalStorageに保存する
   // [travels]を監視対象に指定し、travelsに変化（追加や削除）があった瞬間に自動でlocalStorageを最新状態に上書きする
   useEffect(() => {
@@ -90,14 +114,25 @@ function App() {
   // 保存ボタンが押された時の処理
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();   // ページが勝手にリロードされるのを防ぐ
-
-    const newTravel: TravelCard = {
-      ...formData,
-      id: Date.now(), // 簡易的なID生成
-      spots: tempSpots     // 溜めておいたスポットリストをここで合体
-    };
-
-    setTravels([...travels, newTravel]);                    // リストに追加
+    
+    if (editingId !== null) {
+      // [編集モード]既存のデータをマップして、IDが一致するものだけ差し替える
+      const updatedTravels = travels.map((t) =>
+        t.id === editingId ? { ...formData, id: editingId, spots: tempSpots } : t
+      );
+      setTravels(updatedTravels);
+      setEditingId(null);     // 編集モード終了
+    } else {
+      // [新規作成モード]
+      const newTravel: TravelCard = {
+        ...formData,
+        id: Date.now(), // 簡易的なID生成
+        spots: tempSpots     // 溜めておいたスポットリストをここで合体
+      };
+      setTravels([...travels, newTravel]);                    // リストに追加
+    }
+    
+    // 共通の初期化処理
     setFormData({title: "", area: "", totalComment: ""});   // フォームを空にする
     setTempSpots([]);                                       // スポットリストをリセット
   };
@@ -121,7 +156,7 @@ function App() {
 
       {/* 入力フォーム */}
       <form onSubmit={handleSubmit} className='travel-form'>
-        <h3>1. 旅行の基本情報</h3>
+        <h3>{editingId !== null ? "旅行記を編集" : "1. 旅行の基本情報"}</h3>
         <input
           name='title'
           placeholder='旅行のタイトル（例:北海道 3泊4日)'
@@ -167,7 +202,16 @@ function App() {
           value={formData.totalComment}
           onChange={handleChange}
         />
-        <button type="submit" className='main-submit-button'>旅行記を保存する</button>
+
+        <button type='submit' className='main-submit-button'>
+          {editingId !== null ? "変更を保存する" : "旅行記を保存する"}
+        </button>
+        
+        {editingId !== null && (
+          <button type="button" onClick={cancelEdit} className='cancel-button'>
+            キャンセル
+          </button>
+        )}
       </form>
 
       <hr />
@@ -184,6 +228,10 @@ function App() {
                 {/* 削除ボタン */}
                 <button onClick={() => deleteTravel(travel.id)} className='delete-button'>
                   削除
+                </button>
+                {/* カード一覧の削除ボタンの横に編集ボタンを追加 */}
+                <button onClick={() => startEdit(travel)} className='edit-button'>
+                  編集
                 </button>
               </div>
             </div>
