@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import './App.css'
 
 // 訪れた地点ごとの型
@@ -7,6 +7,7 @@ interface Spot {
   name: string;       // 観光地などの名前
   comment: string;    // 訪れた地点ごとの感想
   mapUrl: string;
+  photo?: string;
 }
 
 // 1. １つの旅行カードの型定義
@@ -51,7 +52,47 @@ function App() {
     name: '',
     comment: '',
     mapUrl: '',
+    photo: ''
   });
+
+  // ファイルを処理する関数
+  const processFile = (file: File) => {
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        // 写真データをBase64文字列として保存
+        setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
+      };
+      // addEventListenerを使用する時(1つのイベントに対して、複数の処理を登録できる)
+      // reader.addEventListener("load", () => {
+      //   setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
+      // });
+
+      reader.readAsDataURL(file);
+    } else {
+      alert("画像ファイル(jpg, png等)を選択して下さい。");
+    }
+  };
+
+  // ドロップ時の処理
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();     // ブラウザが画像を開くのを防ぐ
+    e.stopPropagation();    // イベントの伝播停止
+
+    const file = e.dataTransfer.files[0];
+    processFile(file);
+  };
+
+  // ドラッグオーバー(これがないとドロップが反応しない)
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  // ドラッグエンターした時の処理
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   // この旅行に追加予定の「スポットリスト」のState
   const [tempSpots, setTempSpots] = useState<Spot[]>([]);
@@ -180,6 +221,28 @@ function App() {
           <textarea name="comment" placeholder='スポットの感想' value={spotInput.comment} onChange={handleSpotChange}></textarea>
           <button type='button' onClick={addSpotToTempList} className='add-spot-button'>
             このスポットを追加
+          </button>
+          {/* ドロップ領域とプレビュー */}
+          <div
+            className={`drop-zone ${spotInput.photo ? 'has-photo' : ''}`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+          >
+            {spotInput.photo ? (
+              <div className='preview-container'>
+                <img src={spotInput.photo} alt="Selected" className='preview-img' />
+                <button type='button' onClick={() => setSpotInput({ ...spotInput, photo: '' })}>
+                  写真を変更
+                </button>
+              </div>
+            ) : (
+              <p>📷 写真をドラッグ＆ドロップ</p>
+            )}
+          </div>
+
+          <button type="button" onClick={addSpotToTempList} className='add-spot-button'>
+            スポットを追加
           </button>
         </div>
 
