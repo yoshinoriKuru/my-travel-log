@@ -57,13 +57,22 @@ function App() {
 
   // ファイルを処理する関数
   const processFile = (file: File) => {
+    // 1. サイズチェック（1ファイル1MB以下にする）
+    const maxSize = 1 * 1024 * 1024;
+    
+    if (file.size > maxSize) {
+      alert("画像サイズが大きすぎます(1MB以下にして下さい)。スマホの写真はリサイズが必要です。");
+      return;
+    }
+
+    // 2. 既存のタイプチェックと読み込み処理
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = () => {
         // 写真データをBase64文字列として保存
         setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
       };
-      // addEventListenerを使用する時(1つのイベントに対して、複数の処理を登録できる)
+      //  --- onloadではなくaddEventListenerを使用する時(1つのイベントに対して、複数の処理を登録できる) ---
       // reader.addEventListener("load", () => {
       //   setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
       // });
@@ -219,9 +228,9 @@ function App() {
         <div className='spot-input-section'>
           <input name="name" placeholder='スポット名(例:小樽運河)' value={spotInput.name} onChange={handleSpotChange} />
           <textarea name="comment" placeholder='スポットの感想' value={spotInput.comment} onChange={handleSpotChange}></textarea>
-          <button type='button' onClick={addSpotToTempList} className='add-spot-button'>
+          {/* <button type='button' onClick={addSpotToTempList} className='add-spot-button'>
             このスポットを追加
-          </button>
+          </button> */}
           {/* ドロップ領域とプレビュー */}
           <div
             className={`drop-zone ${spotInput.photo ? 'has-photo' : ''}`}
@@ -283,8 +292,8 @@ function App() {
       <div className='card-list'>
         {travels.map((travel) => (
           <div key={travel.id} className='travel-card'>
-            {/* エリアをバッジとして表示 */}
             <div className='card-header'>
+              {/* エリアをバッジとして表示 */}
               <span className='area-badge'>{travel.area}</span>
               <div className='header-main'>
                 <h2>{travel.title}</h2>
@@ -306,10 +315,18 @@ function App() {
             {travel.spots.map((spot) => (
               <div key={spot.id} className='spot-item'>
                 <h4>📍 {spot.name}</h4>
-                <p>{spot.comment}</p>
+                {/* <p>{spot.comment}</p> */}
                 <a href={spot.mapUrl} target='_blank' rel='noopener noreferrer' className='map-link'>
                   マップで見る
                 </a>
+                {/* 写真がある場合のみ表示する */}
+                {spot.photo && (
+                  <div className='spot-photo-container'>
+                    <img src={spot.photo} alt={spot.name} className='spot-card-img' />
+                  </div>
+                )}
+
+                <p className='spot-comment'>{spot.comment}</p>
               </div>
             ))}
             </div>

@@ -103,10 +103,36 @@ h1 {
   color: #d35400;
 }
 
+.spot-photo-container {
+  margin: 10px 0;
+  width: 100%;
+  max-height: 250px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.spot-card-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: tarsform 0.3s;
+}
+
+.spot-card-img:hover {
+  transform: scale(1.05);
+}
+
 .map-link {
   font-size: 0.8rem;
   color: #4285F4;
   text-decoration: none;
+}
+
+.spot-comment {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  margin-top: 8px;
 }
 
 .spot-input-section {
