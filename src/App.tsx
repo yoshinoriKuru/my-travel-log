@@ -55,28 +55,59 @@ function App() {
     photo: ''
   });
 
+  // ファイルをリサイズする
+  const resizeImage = (base64Str: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        let width = img.width;
+        let height = img.height;
+
+        // 比率を保ったままリサイズ
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+      
+        // 圧縮してBase64で出力(jpeg形式、画質0.7)
+        const resizedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(resizedBase64);
+      };
+    });
+  };
+
   // ファイルを処理する関数
   const processFile = (file: File) => {
-    // 1. サイズチェック（1ファイル1MB以下にする）
-    const maxSize = 1 * 1024 * 1024;
-    
-    if (file.size > maxSize) {
-      alert("画像サイズが大きすぎます(1MB以下にして下さい)。スマホの写真はリサイズが必要です。");
+    // 1. サイズ制限は、リサイズ失敗時の保険として「5MB以上はNG」
+    if (file.size > 5 * 1024 * 1024) {
+      alert("5MBを超える画像は、読込に時間がかかるため選択できません。");
       return;
     }
 
     // 2. 既存のタイプチェックと読み込み処理
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
-      reader.onload = () => {
-        // 写真データをBase64文字列として保存
-        setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
-      };
+      // reader.onload = () => {
+      //   // 写真データをBase64文字列として保存
+      //   setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
+      // };
       //  --- onloadではなくaddEventListenerを使用する時(1つのイベントに対して、複数の処理を登録できる) ---
       // reader.addEventListener("load", () => {
       //   setSpotInput(prev => ({ ...prev, photo: reader.result as string }));
       // });
-
+      reader.onload = async () => {
+        const originalBase64 = reader.result as string;
+        const resizedBase64 = await resizeImage(originalBase64);
+        setSpotInput(prev => ({ ...prev, photo: resizedBase64 }));
+      };
       reader.readAsDataURL(file);
     } else {
       alert("画像ファイル(jpg, png等)を選択して下さい。");
