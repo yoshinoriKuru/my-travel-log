@@ -1,238 +1,104 @@
+/* --- 全体レイアウト --- */
 .container {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  font-family: sans-serif;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+  line-height: 1.6;
 }
 
+
+
+デフォルト（ライトモード）
 h1 {
   text-align: center;
-  color: #333;
-  margin-bottom: 40px;
-}
-
-.card-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-.card-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.area-badge {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  margin-bottom: 5px;
-  border: 1px solid #bbdefb;
-}
-
-.travel-form {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.travel-form input, .travel-form textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-.travel-form button {
-  padding: 12px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.travel-form button:hover {
-  background-color: #218838;
-}
-
-.travel-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 20px;
-  transition: transform 0.2s;
-  border: 1px solid #eee;
-}
-
-.travel-card:hover {
-  transform: translateY(-5px);
-}
-
-.travel-card h2 {
-  margin: 0;
-  font-size: 1.25rem;
   color: #2c3e50;
 }
 
-.spot-list {
-  margin-top: 15px;
-  border-top: 1px solid #eee;
-  padding-top: 10px;
+/* ブラウザがダークモード設定の時だけ上書き */
+@media (prefers-color-scheme: dark) {
+  h1 {
+    text-align: center;
+    color: #3498db;
+    /* color: #f39c12; */
+    /* text-shadow: 0 0 1px rgba(255, 255, 255, 0.2); */
+    text-shadow: 0 0 9px rgba(236, 255, 255, 0.7);
+  }
 }
 
-.spot-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-}
 
-.spot-item h4 {
-  margin: 0 0 5px 0;
-  color: #d35400;
-}
-
-.spot-photo-container {
-  margin: 10px 0;
-  width: 100%;
-  max-height: 250px;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-.spot-card-img {
-  width: 100%;
-  height: 200px;
-  object-fit: contain;
-  transition: tarsform 0.3s;
-}
-
-.spot-card-img:hover {
-  transform: scale(1.05);
-}
-
-.map-link {
-  font-size: 0.8rem;
-  color: #4285F4;
-  text-decoration: none;
-}
-
-.spot-comment {
-  font-size: 0.9rem;
-  color: #555;
-  line-height: 1.5;
-  margin-top: 8px;
-}
-
-.spot-input-section {
+/* --- フォーム共通 --- */
+.travel-form {
   background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+}
+
+.travel-form input,
+.travel-form textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 1rem;
+}
+
+.travel-form hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+/* --- スポット入力セクション --- */
+.spot-input-section {
+  background: #f8f9fa;
   padding: 15px;
-  border: 1px dashed #ccc;
   border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .add-spot-button {
-  background-color: #6c757d !important;
-  font-size: 0.8rem !important;
-}
-
-.temp-spot-list {
-  margin: 10px 0;
-  padding-left: 20px;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.main-submit-button {
-  background-color: #28a745 !important;
-  font-size: 1.1rem !important;
-}
-
-.header-main {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%,
-}
-
-.delete-button {
-  background-color: #ff4d4d;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
+  padding: 10px 20px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.8rem;
-}
-
-.delete-button:hover {
-  background-color: #ff1a1a;
-}
-
-.delete-mini-button {
-  background: none;
-  border: none;
-  color: #999;
-  cursor: pointer;
-  margin-left: 10px;
+  width: 100%;
   font-weight: bold;
 }
 
-.delete-mini-button:hover {
-  color: #ff4d4d;
-}
-
-.edit-button {
-  background-color: #ffc107;
-  color: #212529;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  margin-right: 5px;
-}
-
-.cancel-button {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px;
-  cursor: pointer;
-}
-
+/* --- ドロップゾーン --- */
 .drop-zone {
-  border: 2px dashed #bbb;
-  border-radius: 12px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
   padding: 20px;
   text-align: center;
-  background: #fdfdfd;
-  cursor: pointer;
-  transition: all 0.2s;
+  margin-bottom: 15px;
+  background: #fff;
+  transition: all 0.3s;
   min-height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex;            /* 中の文字や画像を中央に寄せる */
+  flex-direction: column;   
+  justify-content: center;  /* 縦方向の中央揃え */ 
+  align-items: center;      /* 横方向の中央揃え */
 }
 
-.drop-zone:hover {
-  border-color: #4285F4;
-  background: #f0f7ff;
+.drop-zone.has-photo {
+  border-style: solid;
+  border-color: #007bff;
+}
+
+.preview-img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 4px;
+  margin-bottom: 10px;
 }
 
 .preview-container {
@@ -242,9 +108,158 @@ h1 {
   gap: 10px;
 }
 
-.preview-img {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* --- 追加予定のスポットリスト (編集中を含む) --- */
+.temp-spot-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
 }
+
+.temp-spot-list li {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 編集ボックス（編集中のみ縦並びにする） */
+.temp-spot-list li .spot-edit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* --- ボタン群 (詳細度を確保するため親を指定) --- */
+
+/* 汎用リセット: フォーム内のボタンがデフォルトで変な色にならないように */
+.travel-form button {
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-family: inherit;
+}
+
+/* 編集・削除ミニボタン */
+.edit-mini-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-left: auto; /* 右に寄せる */
+}
+
+.delete-mini-button {
+  background-color: #ff4d4d; /* ここが確実に赤になります */
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+/* スポット編集完了ボタン */
+.spot-save-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* 旅行記全体保存ボタン */
+.main-submit-button {
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.cancel-button {
+  background-color: #e9ecef;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 6px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* --- 保存済みカード --- */
+.card-list {
+  display: grid;
+  gap: 20px;
+}
+
+.travel-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.area-badge {
+  background: #e3f2fd;
+  color: #007bff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+.header-main {
+  display: flex;
+  /* justify-content: space-between; */
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.header-main h2 { color: #2c3e50; margin: 0; font-size: 1.4rem; }
+
+/* カード内の編集・削除 */
+.edit-button { background: #ffc107; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; margin-left: 8px; }
+.delete-button { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; }
+
+/* スポット表示 */
+.spot-item {
+  border-top: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.spot-card-img {
+  width: 100%;
+  height: 250px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.map-link {
+  display: inline-block;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.map-link:hover { text-decoration: underline; }
+.spot-comment { color: #555; font-size: 0.95rem; }

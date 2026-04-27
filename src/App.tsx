@@ -3,7 +3,7 @@ import './App.css'
 
 // 訪れた地点ごとの型
 interface Spot {
-  id: number;
+  id: string;
   name: string;       // 観光地などの名前
   comment: string;    // 訪れた地点ごとの感想
   mapUrl: string;
@@ -12,7 +12,7 @@ interface Spot {
 
 // 1. １つの旅行カードの型定義
 interface TravelCard {
-  id: number;
+  id: string;
   title: string;
   area: string;         // 「北海道」「九州」など
   totalComment: string;
@@ -155,15 +155,18 @@ function App() {
       
       const newSpot: Spot ={
         ...spotInput,
-        id: Date.now(),   // 簡易ID
+        id: crypto.randomUUID(),   // ブラウザ標準のランダムID
         mapUrl: generatedMapUrl,    // 自動生成したURLをセット
       };
       setTempSpots([...tempSpots, newSpot]);
-      setSpotInput({name: "", comment: "", mapUrl: ""});    // 入力欄をクリア
+      setSpotInput({name: "", comment: "", mapUrl: "", photo: ""});    // 入力欄をクリア
   };
 
   // 編集中の旅行記のIDを保持する(nullなら新規作成モード)
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // スポット編集用のState(新規追加ではなく、既存のtampSpotsを修正するため)
+  const [editingSpotId, setEditingSpotId] = useState<string | null>(null);
 
   // 編集ボタンが押された時の処理
   const startEdit = (travel: TravelCard) => {
@@ -207,7 +210,7 @@ function App() {
       // [新規作成モード]
       const newTravel: TravelCard = {
         ...formData,
-        id: Date.now(), // 簡易的なID生成
+        id: crypto.randomUUID(), // ブラウザ標準のランダムID
         spots: tempSpots     // 溜めておいたスポットリストをここで合体
       };
       setTravels([...travels, newTravel]);                    // リストに追加
@@ -219,7 +222,7 @@ function App() {
   };
 
   // 旅行記を削除する処理
-  const deleteTravel = (id: number) => {
+  const deleteTravel = (id: string) => {
     if (window.confirm("この旅行記を削除してもよろしいですか？")) {
       const updatedTravels = travels.filter((travel) => travel.id !== id);
       setTravels(updatedTravels);   // useEffectが動くので、localStorageも自動で更新される
@@ -227,7 +230,7 @@ function App() {
   };
 
   // スポット入力中のリストから1つ削除する処理
-  const deleteTempSpot = (id: number) => {
+  const deleteTempSpot = (id: string) => {
     setTempSpots(tempSpots.filter((spot) => spot.id !== id));
   };
 
@@ -237,7 +240,7 @@ function App() {
 
       {/* 入力フォーム */}
       <form onSubmit={handleSubmit} className='travel-form'>
-        <h3>{editingId !== null ? "旅行記を編集" : "1. 旅行の基本情報"}</h3>
+        <h3>{editingId !== null ? "旅行記を編集" : "旅行の基本情報"}</h3>
         <input
           name='title'
           placeholder='旅行のタイトル（例:北海道 3泊4日)'
@@ -255,13 +258,10 @@ function App() {
 
         <hr />
 
-        <h3>2. 訪れたスポットを追加</h3>
+        <h3>訪れたスポットを追加</h3>
         <div className='spot-input-section'>
           <input name="name" placeholder='スポット名(例:小樽運河)' value={spotInput.name} onChange={handleSpotChange} />
           <textarea name="comment" placeholder='スポットの感想' value={spotInput.comment} onChange={handleSpotChange}></textarea>
-          {/* <button type='button' onClick={addSpotToTempList} className='add-spot-button'>
-            このスポットを追加
-          </button> */}
           {/* ドロップ領域とプレビュー */}
           <div
             className={`drop-zone ${spotInput.photo ? 'has-photo' : ''}`}
@@ -289,10 +289,32 @@ function App() {
         {/* 追加予定のスポット一覧を表示 */}
         <ul className="temp-spot-list">
           {tempSpots.map(spot => (
-            <li key={spot.id}>📍 {spot.name}
-              <button type='button' onClick={() => deleteTempSpot(spot.id)} className='delete-mini-button'>
-                x
-              </button>
+            <li key={spot.id}>
+              {editingSpotId === spot.id ? (
+                // 編集モード：入力欄に切り替わる
+                <div className='spot-edit-box'>
+                  <input 
+                    value={spot.name}
+                    onChange={(e) => setTempSpots(tempSpots.map(s => s.id === spot.id ? { ...s, name: e.target.value} : s))}
+                  />
+                  <textarea 
+                    value={spot.comment}
+                    onChange={(e) => setTempSpots(tempSpots.map(s => s.id === spot.id ? { ...s, comment: e.target.value}: s))}
+                  />
+                  <button type='button' onClick={() => setEditingSpotId(null)} className='spot-save-button'>完了</button>
+                </div>
+              ) : (
+                // 通常モード：名前と編集・削除ボタン
+                <>
+                  📍 {spot.name}
+                  <button type='button' onClick={() => setEditingSpotId(spot.id)} className='edit-mini-button'>
+                    編集
+                  </button>
+                  <button type='button' onClick={() => deleteTempSpot(spot.id)} className='delete-mini-button'>
+                    x
+                  </button>
+                </>
+              )}
             </li>
           ))}
         </ul>
