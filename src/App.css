@@ -263,3 +263,48 @@ h1 {
 
 .map-link:hover { text-decoration: underline; }
 .spot-comment { color: #555; font-size: 0.95rem; }
+
+/* 地図モーダルの背景 */
+.map-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* フォームより上に表示 */
+}
+
+/* モーダルの箱 */
+.map-modal-content {
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  height: 80vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 地図本体のサイズ */
+.map-canvas {
+  flex-grow: 1;
+  border-radius: 8px;
+}
+
+/* 閉じるボタン */
+.map-close-button {
+  align-self: flex-end;
+  margin-bottom: 10px;
+  padding: 8px 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

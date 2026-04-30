@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './App.css'
+import TravelMap from './TravelMap';
 
 // 訪れた地点ごとの型
 interface Spot {
@@ -8,6 +9,8 @@ interface Spot {
   comment: string;    // 訪れた地点ごとの感想
   mapUrl: string;
   photo?: string;
+  lat: number;
+  lng: number;
 }
 
 // 1. １つの旅行カードの型定義
@@ -52,7 +55,9 @@ function App() {
     name: '',
     comment: '',
     mapUrl: '',
-    photo: ''
+    photo: '',
+    lat: 0,
+    lng: 0,
   });
 
   // ファイルをリサイズする
@@ -156,10 +161,12 @@ function App() {
       const newSpot: Spot ={
         ...spotInput,
         id: crypto.randomUUID(),   // ブラウザ標準のランダムID
-        mapUrl: generatedMapUrl,    // 自動生成したURLをセット
+        mapUrl: generatedMapUrl,   // 自動生成したURLをセット
+        lat: spotInput.lat || 35.6895,               // ダミー緯度
+        lng: spotInput.lng || 139.6917              // ダミー経度 
       };
       setTempSpots([...tempSpots, newSpot]);
-      setSpotInput({name: "", comment: "", mapUrl: "", photo: ""});    // 入力欄をクリア
+      setSpotInput({name: "", comment: "", mapUrl: "", photo: "", lat: 0, lng: 0});    // 入力欄をクリア
   };
 
   // 編集中の旅行記のIDを保持する(nullなら新規作成モード)
@@ -233,6 +240,9 @@ function App() {
   const deleteTempSpot = (id: string) => {
     setTempSpots(tempSpots.filter((spot) => spot.id !== id));
   };
+
+  // 地図を表示するかどうかのState
+  const [selectedSpotsForMap, setSelectedSpotsForMap] = useState<Spot[] | null>(null);
 
   return (
     <div className='container'>
@@ -347,7 +357,13 @@ function App() {
           <div key={travel.id} className='travel-card'>
             <div className='card-header'>
               {/* エリアをバッジとして表示 */}
-              <span className='area-badge'>{travel.area}</span>
+              <span 
+                className='area-badge'
+                style={{ cursor: 'pointer' }}
+                onClick={() => setSelectedSpotsForMap(travel.spots)}
+              >
+                {travel.area}(地図を見る)
+              </span>
               <div className='header-main'>
                 <h2>{travel.title}</h2>
                 {/* 削除ボタン */}
@@ -385,7 +401,13 @@ function App() {
             </div>
           </div>
         ))}
-      </div>    
+      </div>
+      {selectedSpotsForMap && (
+        <TravelMap
+          spots={selectedSpotsForMap}
+          onClose={() => setSelectedSpotsForMap(null)}
+        />
+      )}    
     </div>
   )
 }
