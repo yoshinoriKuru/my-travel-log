@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './App.css'
 import TravelMap from './TravelMap';
+import { AREA_COORDINATES } from './constants';
 
 // 訪れた地点ごとの型
 interface Spot {
@@ -148,22 +149,44 @@ function App() {
     setSpotInput({...spotInput, [name]: value});
   };
 
-  // 「スポットをリストに追加」ボタンを押した時の処理
-  const addSpotToTempList = () => {
+  // 「スポットをリストに追加」ボタンを押した時の処理(APIを叩くためasync/awaitを使った形に修正)
+  const addSpotToTempList = async () => {
     if (!spotInput.name) return;  // 名前が空なら追加しない
 
-      // 1. スポット名をエンコード(スペースや日本語をURLで使える形式に変換)
-      const encodedName = encodeURIComponent(spotInput.name);
+      // 現在入力されているエリアを取得
+      const areaName = formData.area;
 
-      // 2. GoogleMapの検索URLを作成
-      const generatedMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedName}`;
+      // 座標を取得
+      const coords = await fetchCoordinates(spotInput.name, areaName);
       
+      // 座標が決まらない場合のフォールバック(予備)　最終的に決まらない場合は、デフォルトを東京に指定
+      let finalLat =35.6812;
+      let finalLng = 139.7671;
+
+      if (coords) {
+        // 検索成功時
+        finalLat = coords.lat;
+        finalLng = coords.lng;
+      } else {
+        // 検索失敗時：バッジのエリア(formData.area)の座標を探す
+        const areaDefault = AREA_COORDINATES[formData.area];
+        if (areaDefault) {
+          finalLat = areaDefault.lat;
+          finalLng = areaDefault.lng;
+          alert(`観光地の位置が分かりませんでした。${formData.area}付近を設定してます。`);
+        }
+      }
+      
+      // GoogleMapのURL
+      const encodedName = encodeURIComponent(spotInput.name);
+      const generatedMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedName}`;
+
       const newSpot: Spot ={
         ...spotInput,
         id: crypto.randomUUID(),   // ブラウザ標準のランダムID
         mapUrl: generatedMapUrl,   // 自動生成したURLをセット
-        lat: spotInput.lat || 35.6895,               // ダミー緯度
-        lng: spotInput.lng || 139.6917              // ダミー経度 
+        lat: finalLat,
+        lng: finalLng
       };
       setTempSpots([...tempSpots, newSpot]);
       setSpotInput({name: "", comment: "", mapUrl: "", photo: "", lat: 0, lng: 0});    // 入力欄をクリア
@@ -243,6 +266,42 @@ function App() {
 
   // 地図を表示するかどうかのState
   const [selectedSpotsForMap, setSelectedSpotsForMap] = useState<Spot[] | null>(null);
+
+  // スポット名から緯度経度を取得する
+  const fetchCoordinates = async (name: string, area: string): Promise<{ lat: number, lng: number } | null> => {
+    // area がある場合は、「{area} {spot}」、ない場合は「日本 {spot}」のように切り替える
+    const query = area ? `${area} ${name}` : `日本 ${name}`;
+    
+    try {
+      // 国土地理院の検索APIを利用（スポット名をエンコード(スペースや日本語をURLで使える形式に変換)）
+      // const response = await fetch(
+      //   `https://msearch.gsi.go.jp/address-search/AddressSearch?q=${encodeURIComponent(name)}`
+      // );
+
+      // OpenStreetMapのNominatim APIを利用
+      const response = await fetch(
+        // `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=jp`
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+      );
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        // (国土地理院の検索API)最初の検索結果の座標を取得[経度, 緯度]の順で返ってくるので注意が必要
+        // const [lng, lat] = data[0].geometry.coordinates;
+        // return {lat, lng};
+        
+        // OpenStreetMapは lat, lonという文字列で返ってくる
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon)
+        };
+      }
+    } catch(error) {
+      console.error("座標の取得に失敗しました:", error);
+    }
+    return null;
+  };
 
   return (
     <div className='container'>
