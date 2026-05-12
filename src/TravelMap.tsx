@@ -1,6 +1,7 @@
 import React, { useEffect, useRef} from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import './App.css';
 
 
 // App.tsxで定義している方と同じものを使用する
@@ -17,16 +18,22 @@ interface Spot {
 interface TravelMapSpots {
   spots: Spot[];
   onClose: () => void;
+  // onSelectionLocation?: (lat: number, lng: number) => void;
+  // どのスポット(id)が度の座標(lat, lng)に動いたかを親に伝える
+  onSpotMove: (id: string, lat: number, lng: number) => void;
 }
 
-const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose }) => {
+const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose, onSpotMove }) => {
+  // 地図を描画するためのHTML要素を保持するためのRef
   const mapContainer = useRef<HTMLDivElement>(null);
+  // 地図インスタンス(機能)を保持するためのRef
+  const map = useRef<maplibregl.Map | null>(null);
 
   useEffect(()=> {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     // 地図の初期化
-    const map = new maplibregl.Map({
+    map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: {
         version: 8,
@@ -42,34 +49,55 @@ const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose }) => {
       },
       center: [139.6917, 35.6895],
       zoom: 9
+    }); 
+    
+    // 「確実に中身のある変数」としてコピーを作る
+    const currentMap = map.current;
+
+    spots.forEach(spot => {
+      const marker = new maplibregl.Marker({
+        color: "#ff4d4d",
+        draggable: true       // ドラッグ可能にする
+      })
+      .setLngLat([spot.lng, spot.lat])
+      .setPopup(new maplibregl.Popup({ offset: 25, closeButton: true, closeOnClick: false }).setHTML(`<b>${spot.name}</b><br/>ドラッグして移動可能`))
+      .addTo(currentMap);
+
+      // ドラッグが終わった時のイベント
+      marker.on('dragend', () => {
+        const newLngLat = marker.getLngLat();
+        onSpotMove(spot.id, newLngLat.lat, newLngLat.lng);
+      });
     });
 
-    // スポットを全てピン刺し
+    // 表示範囲の調整（初回のみ）
     if (spots.length > 0) {
       const bounds = new maplibregl.LngLatBounds();
-
-      spots.forEach(spot => {
-        // ピン(マーカー)を作成
-        new maplibregl.Marker({ color: "#ff4d4d" })
-          .setLngLat([spot.lng, spot.lat])
-          .setPopup(new maplibregl.Popup({ offset: 25 }).setHTML(`<b>${spot.name}</b>`))
-          .addTo(map);
-        bounds.extend([spot.lng, spot.lat]);
-      });
-
-      // 全てのピンが収まるように表示範囲を調整
-      map.fitBounds(bounds, { padding: 50, maxZoom: 10 });
+      spots.forEach(s => bounds.extend([s.lng, s.lat]));
+      currentMap.fitBounds(bounds, { padding: 50, maxZoom: 10 });
     }
 
-    return () => map.remove();
+    return () => {
+      map.current?.remove();
+      map.current = null;
+    };
   }, [spots]);
 
   return (
     <div className='map-modal-overlay'>
       <div className='map-modal-content'>
-        <button type="button" className='map-close-button' onClick={onClose}>
-          閉じる
-        </button>
+        <div className='map-header'>
+          <div className='map-save'>
+            <button type='button' className='map-save-confirm-button' onClick={onClose}>
+              位置修正を完了して閉じる
+            </button>
+          </div>
+          <div className='map-close'>
+            <button type="button" className='map-close-button' onClick={onClose}>
+              閉じる
+            </button>
+          </div>
+        </div>
         <div ref={mapContainer} className='map-canvas' />
       </div>
     </div>
