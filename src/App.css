@@ -51,6 +51,24 @@ h1 {
   margin: 20px 0;
 }
 
+/* エリアセレクト */
+.area-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+  color: black;
+  font-size: 16px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.area-select:focus {
+  border-color: #f0ad4e;
+  outline: none;
+}
+
 /* --- スポット入力セクション --- */
 .spot-input-section {
   background: #f8f9fa;
@@ -237,7 +255,7 @@ h1 {
 
 /* 編集キャンセルボタン */
 .cancel-edit-button {
-  width: 100%;
+  width: 60%;
   padding: 10px;
   margin-top: 10px;
   background-color: #f8f9fa;
@@ -245,6 +263,7 @@ h1 {
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 18px;
   font-weight: bold;
   transition: background-color 0.2s;
 }
@@ -460,15 +479,23 @@ h1 {
   border-radius: 4px;
 }
 
+/* 編集の完了ボタン */
 .spot-done-button {
   background-color: #5cb85c;
+  font-size: 18px;
   color: white;
   border: none;
   padding: 4px 12px;
   border-radius: 4px;
   align-self: flex-end;
   cursor: pointer;
+  transition: background-color 2s;
 }
+
+.spot-done-button:hover {
+  background-color: rgb(17, 109, 17);
+}
+
 
 /* 編集中のドロップゾーン */
 .edit-drop-zone {

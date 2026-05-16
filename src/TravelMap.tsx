@@ -17,10 +17,8 @@ interface Spot {
 
 interface TravelMapSpots {
   spots: Spot[];
-  onClose: () => void;
-  // onSelectionLocation?: (lat: number, lng: number) => void;
-  // どのスポット(id)が度の座標(lat, lng)に動いたかを親に伝える
-  onSpotMove: (id: string, lat: number, lng: number) => void;
+  onClose: () => void;    // 保存せずに閉じる
+  onSpotMove: (spotId: string, lat: number, lng: number) => void;   // 完了ボタンを押した時に、確定した移動分を親にまとめて報告する
 }
 
 const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose, onSpotMove }) => {
@@ -28,6 +26,8 @@ const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose, onSpotMove }) => 
   const mapContainer = useRef<HTMLDivElement>(null);
   // 地図インスタンス(機能)を保持するためのRef
   const map = useRef<maplibregl.Map | null>(null);
+  // ドラッグした一時的な座標を保持するRef(親のStateを使用しない)　{"spotId": {lat:123, lng:456}}の形式で保存される
+  const pendingMoves = useRef<{[key: string]: { lat: number, lng: number }}>({});
 
   useEffect(()=> {
     if (!mapContainer.current || map.current) return;
@@ -42,7 +42,7 @@ const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose, onSpotMove }) => 
             type: 'raster',
             tiles: ['https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'],
             tileSize: 256,
-            attribution: "国土地理院",
+            attribution: "国土地理院, OpenStreetMap contributors",
           }
         },
         layers: [{ id: 'gsi-layer', type: 'raster', source: 'gsi' }]
@@ -63,10 +63,10 @@ const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose, onSpotMove }) => 
       .setPopup(new maplibregl.Popup({ offset: 25, closeButton: true, closeOnClick: false }).setHTML(`<b>${spot.name}</b><br/>ドラッグして移動可能`))
       .addTo(currentMap);
 
-      // ドラッグが終わった時のイベント
+      // ドラッグが終わった時、一時保存Refを更新する
       marker.on('dragend', () => {
         const newLngLat = marker.getLngLat();
-        onSpotMove(spot.id, newLngLat.lat, newLngLat.lng);
+        pendingMoves.current[spot.id] = { lat: newLngLat.lat, lng: newLngLat.lng };
       });
     });
 
@@ -83,12 +83,21 @@ const TravelMap: React.FC<TravelMapSpots> = ({ spots, onClose, onSpotMove }) => 
     };
   }, [spots]);
 
+  // 「位置を修正して完了して閉じる」ボタンが押された時の処理
+  const handleConfirmSave = () => {
+    // 溜まっていた移動（pendingMoves）をすべて親の handleSpotMove に流す
+    Object.entries(pendingMoves.current).forEach(([spotId, coords]) => {
+      onSpotMove(spotId, coords.lat, coords.lng);
+    });
+    onClose();    // モーダルを閉じる
+  };
+
   return (
     <div className='map-modal-overlay'>
       <div className='map-modal-content'>
         <div className='map-header'>
           <div className='map-save'>
-            <button type='button' className='map-save-confirm-button' onClick={onClose}>
+            <button type='button' className='map-save-confirm-button' onClick={handleConfirmSave}>
               位置修正を完了して閉じる
             </button>
           </div>

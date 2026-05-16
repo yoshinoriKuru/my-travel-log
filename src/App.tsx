@@ -128,6 +128,7 @@ function App() {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
       const data = await response.json();
+
       if (data && data.length > 0) {
         return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
       }
@@ -195,7 +196,23 @@ function App() {
       <form onSubmit={handleSubmit} className='travel-form'>
         <h3>{editingId ? "旅行記を編集" : "旅行の基本情報"}</h3>
         <input name='title' placeholder='タイトル' value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} required />
-        <input name="area" placeholder='エリア' value={formData.area} onChange={(e) => setFormData({...formData, area: e.target.value})} required />
+        <div className='input-group'>
+          <label>スポットのエリアを選択して下さい</label>
+          <select
+            className="area-select"
+            value={formData.area}
+            required
+            onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+          >
+            <option value="" disabled>都道府県を選択して下さい</option>
+
+            {Object.keys(AREA_COORDINATES).map((pref) => (
+              <option key={pref} value={pref}>
+                {pref}
+              </option>
+            ))}
+          </select>
+        </div>
         
         <div className='spot-input-section'>
           <input name="name" placeholder='スポット名' value={spotInput.name} onChange={(e) => setSpotInput({...spotInput, name: e.target.value})} />
@@ -379,7 +396,7 @@ function App() {
         {editingId != null && (
           <div className='edit-actions-footer'>
             <button type="button" onClick={cancelEdit} className='cancel-edit-button'>
-              旅行記の編集をキャンセルする
+              編集をキャンセルする
             </button>
           </div>
         )}
