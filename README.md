@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# 個人用旅行記録アプリ（Travel Recorder）
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+マップと連動して、旅の思い出や訪れたスポットを写真付きで手軽に記録・管理できるWebアプリケーションです。
+エリアごとに地図の初期位置が変わり、スポット名から自動で座標を取得してピンを刺すことができます。
 
-Currently, two official plugins are available:
+## 主な機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **旅行記の作成・管理**: 旅行タイトルや代表エリア（都道府県）を設定して記録。
+- **地図（マップ）連携機能**:
+  - スポット名を入力すると、自動で座標を検索して地図上にピンを配置（Nominatim API連携）。
+  - 座標を取得することができなかった場合は、代表エリアの都道府県庁周辺にピンが配置される。
+  - 地図上のピンをドラッグ＆ドロップして、位置を直感的に修正することが可能。
+  - 「位置修正を完了して閉じる」ボタンを押したときだけ座標を確定（誤操作防止）。
+  - Nominatim APIで取得した座標とGoogleマップURLの示す座標は同じではない場合があります。
+- **スポット編集機能**: 登録済みのスポット名、コメント、GoogleマップURLの編集および座標の自動再同期。
+- **ドラッグ＆ドロップ写真追加**:
+  - 写真ファイルをエリア内にドロップ、またはファイル選択で簡単に追加。
+  - `useRef` を用いたフォームリセット時のファイル選択クリア機能。
+- **スマートなエリア選択**: 都道府県をセレクトボックス化し、複数入力によるバグや地図の初期位置エラーを完全に防止。
 
-## React Compiler
+## 使用技術 (Tech Stack)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React (TypeScript) / Vite
+- **Styling**: CSS (App.css)
+- **Map Engine**: MapLibre GL
+- **Map Tile**: 国土地理院タイル
+- **Geocoding API**: Nominatim (OpenStreetMap)
 
-## Expanding the ESLint configuration
+## 起動方法 (Setup & Running)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+このプロジェクトをローカル環境で起動する手順です。
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. リポジトリのクローン
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <リポジトリのURL>
+cd <プロジェクトのディレクトリ名>
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. パッケージのインストール
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+### 3. 開発サーバーの起動
+
+```bash
+npm run dev
+```
+
+ターミナルに表示されたURL（例:<http://localhost:5173>）にブラウザでアクセスして下さい。
+
+### ライセンス・クレジット
+
+- 地図データ：国土地理院
+- 検索データ：OpenStreetMap contributors
